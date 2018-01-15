@@ -183,7 +183,7 @@ or with empty category
 @app.route('/item/new/<int:category_id>', methods=['GET', 'POST'])
 def create_item(category_id=0):
     if not is_logged_in():
-        return 'Unauthorized Action'
+        return "You must be authenticated to create Items"
 
     if request.method == 'GET':
         return render_template(
@@ -217,11 +217,14 @@ Edit an existing item, can chached it's metadata including it's category
 
 @app.route('/item/edit/<int:item_id>', methods=['GET', 'PUT'])
 def edit_item(item_id):
+    if not is_logged_in():
+        return 'You must be logged in to edit an item'
+
     item = get_item_by_id(item_id)
     viewer_is_owner = is_viewer_owner(item)
 
     if not viewer_is_owner:
-        return 'Unauthorized Action'
+        return 'You must be the owner / creator of an item to edit it'
 
     if request.method == 'GET':
         return render_template(
@@ -255,11 +258,14 @@ for this as it is called by JavaScript
 
 @app.route('/item/delete/<int:item_id>', methods=['DELETE'])
 def delete_item(item_id):
+    if not is_logged_in():
+        return 'You must be logged in to delete an item'
+
     item = get_item_by_id(item_id)
     viewer_is_owner = is_viewer_owner(item)
 
     if not viewer_is_owner:
-        return 'Unauthorized Action'
+        return 'You must be the owner/creator of an item to delete it'
 
     session.delete(item)
     session.commit()
