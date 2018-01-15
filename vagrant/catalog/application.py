@@ -16,33 +16,74 @@ CLIENT_ID = json.loads(
     open('client_secrets.json', 'r').read()
 )['web']['client_id']
 
+""" START HELPERS _____________________ """
+
+"""
+Gets all categories sorted by category name
+"""
+
 
 def get_all_categories():
     return session.query(Category).order_by(Category.name).all()
+
+
+"""
+Gets a list of all items sorted by descending created date
+"""
 
 
 def get_recent_items():
     return session.query(Item).order_by(desc(Item.created_at)).all()
 
 
+"""
+Get a category by it's ID
+"""
+
+
 def get_category_by_id(id):
     return session.query(Category).filter(Category.id == id).first()
+
+
+"""
+Get an item by ID
+"""
 
 
 def get_item_by_id(id):
     return session.query(Item).filter(Item.id == id).first()
 
 
+"""
+Get a user by their email address
+"""
+
+
 def get_user_by_email(email):
     return session.query(User).filter(User.email == email).first()
+
+
+"""
+Determine if user is logged in
+"""
 
 
 def is_logged_in():
     return login_session.get('id') is not None
 
 
+"""
+See if the current user is the owner of a particular item
+"""
+
+
 def is_viewer_owner(item):
     return login_session.get('id') is item.user_id
+
+
+"""
+Create a user from login_session and add to database
+"""
 
 
 def create_user(login_session):
@@ -56,6 +97,13 @@ def create_user(login_session):
     return new_item
 
 
+""" START VIEWS_________________________ """
+
+"""
+Main view - renders a list of all categories and recent items
+"""
+
+
 @app.route('/')
 def main():
     return render_template(
@@ -65,6 +113,11 @@ def main():
         is_logged_in=is_logged_in(),
         logged_in_user=login_session
     )
+
+
+"""
+Catalog JSON endpoint to return all categories and their associated items
+"""
 
 
 @app.route('/catalog.json')
@@ -88,7 +141,10 @@ def catalog_json():
 
     return jsonify(data=data)
 
-# TODO - cateogry and item pages should perhaps takes slugs instead of ids at some point
+
+"""
+Show a category and ites associated items
+"""
 
 
 @app.route('/category/<int:category_id>')
@@ -102,6 +158,9 @@ def category(category_id):
     )
 
 
+""" Show the details for a particular item """
+
+
 @app.route('/item/<int:item_id>')
 def item(item_id):
     item = get_item_by_id(item_id)
@@ -112,6 +171,12 @@ def item(item_id):
         is_logged_in=is_logged_in(),
         logged_in_user=login_session
     )
+
+
+"""
+Create a new item, can be with a category preselected (category_id provided)
+or with empty category
+"""
 
 
 @app.route('/item/new', methods=['GET', 'POST'])
@@ -143,6 +208,11 @@ def create_item(category_id=0):
         session.commit()
 
         return redirect('/', code=303)
+
+
+"""
+Edit an existing item, can chached it's metadata including it's category
+"""
 
 
 @app.route('/item/edit/<int:item_id>', methods=['GET', 'PUT'])
@@ -177,6 +247,12 @@ def edit_item(item_id):
         return redirect('/', code=303)
 
 
+"""
+Delete an item using DELETE HTTP method, there is no actual view 
+for this as it is called by JavaScript
+"""
+
+
 @app.route('/item/delete/<int:item_id>', methods=['DELETE'])
 def delete_item(item_id):
     item = get_item_by_id(item_id)
@@ -191,6 +267,11 @@ def delete_item(item_id):
     return redirect('/', code=303)
 
 
+""" 
+The login page
+"""
+
+
 @app.route('/login')
 def showLogin():
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
@@ -203,6 +284,11 @@ def showLogin():
         STATE=state,
         user_id=login_session.get('id')
     )
+
+
+"""
+Handle Google Authentication
+"""
 
 
 @app.route('/gconnect', methods=['POST'])
@@ -282,6 +368,7 @@ def gconnect():
     login_session['picture'] = data['picture']
     login_session['email'] = data['email']
 
+    # Add user to DB if doesn't exists
     user_from_db = get_user_by_email(login_session['email'])
     if user_from_db is None:
         user = create_user(login_session)
@@ -301,6 +388,11 @@ def gconnect():
     flash("you are now logged in as %s" % login_session['username'])
     print "done!"
     return output
+
+
+"""
+Handle google logout
+"""
 
 
 @app.route('/gdisconnect')
@@ -335,8 +427,11 @@ def gdisconnect():
         response.headers['Content-Type'] = 'application/json'
 
 
+"""
+Run the application
+"""
+
 if __name__ == '__main__':
-    # @TODO change secret key
     app.secret_key = 'super secret key'
-    # @TODO - remove debug mode
-    app.run(host='0.0.0.0', port=8000, debug=True)
+    # Set debug=True for extra logging
+    app.run(host='0.0.0.0', port=8000, debug=False)

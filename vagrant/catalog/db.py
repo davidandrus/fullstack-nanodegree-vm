@@ -6,11 +6,13 @@ from sqlalchemy.orm import sessionmaker, relationship
 
 Base = declarative_base()
 
-# @TODO - disable extra logging
-engine = create_engine("postgresql://vagrant:vagrant@localhost/catalog", echo=True)
+# Set echo=True for extra logging
+engine = create_engine(
+    "postgresql://vagrant:vagrant@localhost/catalog", echo=False)
 
 # create Session class
 DBSession = sessionmaker(bind=engine)
+
 
 class User(Base):
     __tablename__ = 'users'
@@ -20,7 +22,8 @@ class User(Base):
     picture = Column(Text)
 
     def __repr__(self):
-        return "<User(name='%s', email='%s', picture='%s')>" % ( self.name, self.email, self.picture )
+        return "<User(name='%s', email='%s', picture='%s')>" % (self.name, self.email, self.picture)
+
 
 class Category(Base):
     __tablename__ = "categories"
@@ -29,7 +32,8 @@ class Category(Base):
     items = relationship('Item', backref="items")
 
     def __repr__(self):
-        return "<Category(name='%s')>" % ( self.name )
+        return "<Category(name='%s')>" % (self.name)
+
 
 class Item(Base):
     __tablename__ = 'items'
@@ -42,4 +46,4 @@ class Item(Base):
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     def __repr__(self):
-        return "<Item(name='%s', category_id='%s')>" % ( self.name, self.category_id )
+        return "<Item(name='%s', category_id='%s')>" % (self.name, self.category_id)

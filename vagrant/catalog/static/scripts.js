@@ -1,4 +1,12 @@
 (function() {
+  /**
+   * Sets up an item form. Add and Edit are essentially
+   * the same form with a few differences in verbiage.
+   *
+   * @param {number} id
+   * @param {Function} method
+   * @param {string} verb
+   */
   function setupItemForm(id, method, verb) {
     var form = document.getElementById(id);
     var errorMessage = [
@@ -36,6 +44,13 @@
     });
   }
 
+  /**
+   * Add functionality to delete button so that when clicked a
+   * DELETE request is sent to the server
+   *
+   * @param {number} id
+   * @param {string} name
+   */
   function setupDeleteButton(id, name) {
     document
       .getElementById("delete-button")
@@ -48,6 +63,7 @@
             .then(function(response) {
               if (response.ok && response.redirected) {
                 alert('"' + name + '" successfully deleted');
+                // redirect to the url specified in the server redirect
                 window.location.href = response.url;
               } else {
                 // just makes sure to cascade to catch
@@ -60,7 +76,10 @@
         }
       });
   }
-
+  /**
+   * Connect the google auth front-end to the backend oauth
+   * @param {string} state
+   */
   function getSignInCallback(state) {
     console.log("getting signInCallback", state);
     return function signInCallback(authResult) {

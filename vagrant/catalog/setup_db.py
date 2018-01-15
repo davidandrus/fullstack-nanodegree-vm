@@ -1,6 +1,10 @@
 from sqlalchemy.engine.reflection import Inspector
 from db import Category, DBSession, engine, Base
 
+"""
+This script will add the appropriate tables to the catalog database, 
+it is a critical step in setting up the application
+"""
 categories = [
     "Alternative",
     "Blues",
@@ -26,15 +30,14 @@ categories = [
     "World",
 ]
 
-# @TODO create db if doesn't exist
-
 inspector = Inspector.from_engine(engine)
 
-# create tables if they don't exist yet
+# Create all tables if they don't exist
 if not "categories" in inspector.get_table_names():
     Base.metadata.create_all(engine)
     session = DBSession()
 
+    # add all the categories to the newly created categories table
     for category in categories:
         new_category = Category(name=category)
         session.add(new_category)
